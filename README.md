@@ -1,1 +1,10 @@
-TODO: Setup Prisma, Database, and Swagger. Checkout Sentry
+# SEEDLET Backend
+
+## TODO: 
+
+### Setup 
+
+- Prisma
+- Database (pgsql)
+- Swagger
+- Checkout Sentry
