@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String        @id @default(uuid()) @db.Uuid
+  username        String        @unique @db.VarChar(20)
+  email           String        @unique @db.VarChar(100)
+  password        String
+  firstname       String        @db.VarChar(100)
+  lastname        String        @db.VarChar(100)
+  title           String?       @db.VarChar(20)
+  imageUrl        String?       @db.VarChar(200) @map("image_url")
+  country         String?       @db.VarChar(50)
+  state           String?       @db.VarChar(50)
+  bio             String?       @db.VarChar(100)
+  socialLinks     Json?         @map("social_links")
+  profileUpdated  Boolean       @default(false) @map("profile_updated")
+  status          AccountStatus @default(Active)
+  ideas           Idea[]
+  interests       Interest[]
+
+  labsOwned         Lab[]         @relation("LabOwner")
+  labsCollaborated  Lab[]         @relation("LabCollaborators")
+  taskAssigned      Task[]         @relation("TaskAssignees")
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Idea {
+  id              String      @id @default(uuid()) @db.Uuid
+  title           String      @db.VarChar(50)
+  description     String
+  linkCount       Int         @default(0) @map("like_count")
+  commentCount    Int         @default(0) @map("comment_count")
+  interestCount   Int         @default(0) @map("interest_count")
+  ownerId         String      @db.Uuid    @map("owner_id")
+  refId           String?     @map("ref_id")
+  status          IdeaStatus  @default(Published)
+  neededRoles     String[]    @map("needed_roles")
+  tags            String[]    
+
+  owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  parent          Idea?       @relation("commentOnIdea", fields: [refId], references: [id])
+  comments        Idea[]      @relation("commentOnIdea")
+  interests       Interest[]
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("ideas")
+}
+
+model Interest {
+  id                String    @id @default(uuid()) @db.Uuid
+  ideaId            String    @map("idea_id")
+  userId            String    @map("user_id")
+  roleInterestedIn  String    @map("role_interested_in")
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea              Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+}
+
+model Lab {
+  id              String  @id   @default(uuid())  @db.Uuid
+  title           String  @db.VarChar(100)
+  ownerId         String  @map("owner_id")
+  ideaId          String  @map("idea_id")
+  summary         String
+  documents       Json[]
+  duration        String
+
+  owner           User   @relation("LabOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  collaborators   User[] @relation("LabCollaborators")
+
+  lastActivityAt    DateTime         @default(now())  @map("last_activity_at")
+  expiresAt         DateTime?        @map("expires_at") // only set if Inactive
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+}
+
+model Task {
+  id                String  @id @default(uuid()) @db.Uuid
+  labId             String  @map("lab_id")
+  duration          String
+  status            TaskStatus  @default(Todo)
+
+  assignees         User[] @relation("TaskAssignees")
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+}
+
+model LabDiscussion {
+  id                String  @id @default(uuid()) @db.Uuid
+  text              String
+  labId             String
+  collaboratorId    String
+
+  refId             String
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+}
+
+enum AccountStatus {
+  Active
+  Inactive
+}
+
+enum IdeaStatus {
+  Draft
+  Published
+  Lab
+  Archived
+}
+
+enum LabStatus {
+  Active
+  Inactive
+  Paused
+  Completed
+  Archived
+}
+
+enum TaskStatus {
+  Todo
+  InProgress
+  Completed
+  Canceled
+}
