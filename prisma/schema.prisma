@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String        @id @default(uuid()) @db.Uuid
+  username        String        @unique @db.VarChar(20)
+  email           String        @unique @db.VarChar(100)
+  password        String
+  firstname       String        @db.VarChar(100)
+  lastname        String        @db.VarChar(100)
+  title           String?       @db.VarChar(20)
+  imageUrl        String?       @db.VarChar(200) @map("image_url")
+  country         String?       @db.VarChar(50)
+  state           String?       @db.VarChar(50)
+  bio             String?       @db.VarChar(100)
+  socialLinks     Json?         @map("social_links")
+  profileUpdated  Boolean       @default(false) @map("profile_updated")
+  status          AccountStatus @default(Active)
+
+  ideas             Idea[]
+  interests         Interest[]
+  LabDiscussions    LabDiscussion[]
+  labsOwned         Lab[]             @relation("LabOwner")
+  taskAssigned      Task[]            @relation("TaskAssignees")
+  labsJoined        LabCollaborator[]
+  labInvitesReceived    LabInvite[] @relation("InviteReceiver")
+  labInvitesSent        LabInvite[] @relation("Inviter")
+  notifications     Notification[]
+  
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Idea {
+  id              String      @id @default(uuid()) @db.Uuid
+  title           String      @db.VarChar(50)
+  description     String
+  linkCount       Int         @default(0) @map("like_count")
+  commentCount    Int         @default(0) @map("comment_count")
+  interestCount   Int         @default(0) @map("interest_count")
+  ownerId         String      @db.Uuid    @map("owner_id")
+  refId           String?     @map("ref_id") @db.Uuid
+  status          IdeaStatus  @default(Published)
+  neededRoles     String[]    @map("needed_roles")
+  tags            String[]    
+
+  owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  parent          Idea?       @relation("commentOnIdea", fields: [refId], references: [id])
+  comments        Idea[]      @relation("commentOnIdea")
+  interests       Interest[]
+  lab             Lab?        @relation("IdeaLab")
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("ideas")
+}
+
+model Interest {
+  id                String    @id @default(uuid()) @db.Uuid
+  ideaId            String    @map("idea_id") @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  roleInterestedIn  String    @map("role_interested_in")
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  idea              Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@unique([userId, ideaId])
+
+  @@map("interests")
+}
+
+model Lab {
+  id                String  @id   @default(uuid())  @db.Uuid
+  title             String  @db.VarChar(100)
+  ownerId           String  @map("owner_id") @db.Uuid
+  ideaId            String  @unique @map("idea_id") @db.Uuid
+  summary           String
+  documents         Json[]
+  duration          String
+
+  labCollaborators  LabCollaborator[]
+  owner             User          @relation("LabOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  idea              Idea          @relation("IdeaLab", fields: [ideaId], references: [id])
+  fieldEntry        FieldEntry?   @relation("labFieldEntry")
+  labInvitations    LabInvite[]
+
+  lastActivityAt    DateTime         @default(now())  @map("last_activity_at")
+  expiresAt         DateTime?        @map("expires_at") // only set if Inactive
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@map("labs")
+}
+
+model LabInvite {
+  id                String  @id   @default(uuid())  @db.Uuid
+  labId             String  @map("lab_id")  @db.Uuid
+  guestId           String  @map("guest_id") @db.Uuid
+  sentById          String  @map("sent_by_id") @db.Uuid
+  status            LabInviteStatus @default(Pending)
+
+  lab               Lab   @relation(fields: [labId], references: [id])
+  guest             User  @relation("InviteReceiver", fields: [guestId], references: [id])
+  sentBy            User  @relation("Inviter", fields: [sentById], references: [id])
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@unique([labId, guestId])
+
+  @@map("lab_invites")
+}
+
+model LabCollaborator {
+  id                String            @id   @default(uuid())  @db.Uuid
+  collaboratorId    String            @map("collaborator_id") @db.Uuid
+  labId             String            @map("lab_id")  @db.Uuid
+  role              String            @db.VarChar(20)
+  joinedAt          DateTime          @default(now()) @map("joined_at")
+
+  collaborator      User              @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+  lab               Lab               @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@unique([collaboratorId, labId])
+
+  @@map("lab_collaborators")
+}
+
+model Task {
+  id                String  @id @default(uuid()) @db.Uuid
+  labId             String  @map("lab_id")  @db.Uuid
+  duration          String
+  status            TaskStatus  @default(Todo)
+
+  assignees         User[] @relation("TaskAssignees")
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@map("tasks")
+}
+
+model LabDiscussion {
+  id                String  @id @default(uuid()) @db.Uuid
+  text              String
+  labId             String  @map("lab_id")  @db.Uuid
+  collaboratorId    String  @map("collaborator_id") @db.Uuid
+
+  refId             String  @map("ref_id")  @db.Uuid
+
+  discussionOwner   User            @relation(fields: [collaboratorId], references: [id])
+  parent            LabDiscussion?  @relation("commentOnLabDiscussion", fields: [refId], references: [id])
+  comments          LabDiscussion[] @relation("commentOnLabDiscussion")
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@map("lab_discussions")
+}
+
+model FieldEntry {
+  id                String  @id @default(uuid()) @db.Uuid
+  labId             String @unique  @map("lab_id")  @db.Uuid
+  Summary           String
+  tags              String[]
+  toolsUsed         String[]  @map("tools_used")
+
+  lab               Lab     @relation("labFieldEntry", fields: [labId], references: [id])
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+}
+
+model Notification {
+  id                String  @id @default(uuid()) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid // receiver
+  title             String  @db.VarChar(50)
+  content           String
+  type              NotificationType
+  metaData          Json?    // {action, ref_id, ref}
+  isRead            Boolean @default(false)
+
+  receiver          User    @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId])
+}
+
+enum AccountStatus {
+  Active
+  Inactive
+}
+
+enum IdeaStatus {
+  Draft
+  Published
+  Lab
+  Archived
+}
+
+enum LabStatus {
+  Active
+  Inactive
+  Paused
+  Completed
+  Archived
+}
+
+enum LabInviteStatus {
+  Pending
+  Accepted
+  Rejected
+}
+
+enum TaskStatus {
+  Todo
+  InProgress
+  Completed
+  Canceled
+}
+
+enum NotificationType {
+  LabInvite
+  LabArchive
+  LabOwnershipTransfer
+  Reaction
+  Reminder
+}
