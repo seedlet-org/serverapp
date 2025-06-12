@@ -8,7 +8,6 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDTO, RegistrationDTO } from './dto/auth.dto';
-// import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
