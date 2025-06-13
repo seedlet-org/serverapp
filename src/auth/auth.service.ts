@@ -28,9 +28,12 @@ export class AuthService {
       sub: user.id,
     };
     return {
-      access_token: this.jwtService.sign(payload),
-      user: {
+      statuscode: 0,
+      message: 'Logged in successfully',
+      data: {
+        access_token: this.jwtService.sign(payload),
         email: user.email,
+        username: user.username,
         firstname: user.firstname,
         lastname: user.lastname,
         profileUpdated: user.profileUpdated,
