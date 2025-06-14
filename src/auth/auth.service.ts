@@ -1,40 +1,72 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
-import { comparePassword } from 'src/utils/helpers.utils';
+import { compareValue, hashValue } from 'src/utils/helpers.utils';
 import { LoginDTO, RegistrationDTO } from './dto/auth.dto';
 import prisma from 'src/prisma/prisma.middleware';
 import { User } from '@prisma/client';
-
+import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
+import { REDIS_CLIENT, RedisKeys } from 'src/constants';
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
   async validateUser(input: LoginDTO) {
     const user = await this.usersService.user(input.userid);
-    if (user && comparePassword(input.password, user.password)) {
+    if (user && compareValue(input.password, user.password)) {
       return user;
     }
     return null;
   }
 
-  login(user: User) {
+  async validateRefreshToken(user_id: string, refresh_token: string) {
+    const hashedTokenInRedis = await this.redis.get(
+      `${RedisKeys.RefreshToken}:${user_id}`,
+    );
+    if (!hashedTokenInRedis) {
+      return null;
+    }
+
+    const isMatch = compareValue(refresh_token, hashedTokenInRedis);
+
+    if (!isMatch) {
+      return null;
+    }
+
+    return this.usersService.findById(user_id);
+  }
+
+  async login(user: User) {
     const payload = {
       username: user.username,
       email: user.email,
       sub: user.id,
     };
-    return {
+
+    // Generate access and refresh tokens
+    const tokens = {
       access_token: this.jwtService.sign(payload),
-      user: {
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        profileUpdated: user.profileUpdated,
-      },
+      refresh_token: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION'),
+      }),
+    };
+
+    // hash and save refresh token in redis
+    const hashedRefreshToken = hashValue(tokens.refresh_token);
+    const expiresIn = 7 * 24 * 60 * 60; // 7days in seconds
+    const key = `${RedisKeys.RefreshToken}:${user.id}`;
+    await this.redis.set(key, hashedRefreshToken, 'EX', expiresIn);
+
+    return {
+      tokens,
+      user,
     };
   }
 
@@ -64,7 +96,9 @@ export class AuthService {
     return {
       statuscode: 0,
       message: 'User registered successfully',
-      id: user.id,
+      data: {
+        id: user.id,
+      },
     };
   }
 }
