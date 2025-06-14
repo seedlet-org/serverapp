@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { EmailService } from './email/email.service';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { APP_GUARD } from '@nestjs/core';
     RedisModule,
     UsersModule,
     AuthModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [
@@ -35,6 +38,7 @@ import { APP_GUARD } from '@nestjs/core';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    EmailService,
   ],
 })
 export class AppModule {}
