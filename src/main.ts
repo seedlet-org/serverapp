@@ -10,6 +10,14 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Seedlet API')
     .setDescription('Seedlet API endpoints documentation')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'Authorization',
+      description: 'Enter JWT token',
+      in: 'header',
+    })
     .setVersion('1.0')
     .build();
 

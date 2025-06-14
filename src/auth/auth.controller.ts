@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -10,11 +11,33 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDTO, RegistrationDTO } from './dto/auth.dto';
 import { Throttle } from '@nestjs/throttler';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  async handleTokenAsCookie(user: User, response: Response) {
+    const { tokens } = await this.authService.login(user);
+
+    response.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/auth/refresh',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
+    });
+
+    return {
+      access_token: tokens.access_token,
+      email: user.email,
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      profileUpdated: user.profileUpdated,
+    };
+  }
 
   @UseGuards(AuthGuard('local'))
   @Throttle({ default: { limit: 3, ttl: 5000 } })
@@ -30,26 +53,13 @@ export class AuthController {
       );
     }
 
-    const { tokens } = await this.authService.login(user);
-
-    response.cookie('refresh_token', tokens.refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/auth/refresh',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
-    });
+    const result = await this.handleTokenAsCookie(user, response);
 
     return {
       statuscode: 0,
       message: 'Logged in successfully',
       data: {
-        access_token: tokens.access_token,
-        email: user.email,
-        username: user.username,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        profileUpdated: user.profileUpdated,
+        ...result,
       },
     };
   }
@@ -57,5 +67,26 @@ export class AuthController {
   @Post('register')
   register(@Body() input: RegistrationDTO) {
     return this.authService.register(input);
+  }
+
+  @UseGuards(AuthGuard('jwt-refresh'))
+  @Post('refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = req.user as User;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const result = await this.handleTokenAsCookie(user, res);
+
+    return {
+      statuscode: 0,
+      message: 'Token refreshed successfully',
+      data: {
+        ...result,
+      },
+    };
   }
 }

@@ -25,6 +25,23 @@ export class AuthService {
     return null;
   }
 
+  async validateRefreshToken(user_id: string, refresh_token: string) {
+    const hashedTokenInRedis = await this.redis.get(
+      `auth:user:refresh_token:${user_id}`,
+    );
+    if (!hashedTokenInRedis) {
+      return null;
+    }
+
+    const isMatch = compareValue(refresh_token, hashedTokenInRedis);
+
+    if (!isMatch) {
+      return null;
+    }
+
+    return this.usersService.findById(user_id);
+  }
+
   async login(user: User) {
     const payload = {
       username: user.username,
@@ -43,7 +60,13 @@ export class AuthService {
 
     // hash and save refresh token in redis
     const hashedRefreshToken = hashValue(tokens.refresh_token);
-    await this.redis.set(`auth:user:refresh:${user.id}`, hashedRefreshToken);
+    const expiresIn = 7 * 24 * 60 * 60; // 7days in seconds
+    await this.redis.set(
+      `auth:user:refresh_token:${user.id}`,
+      hashedRefreshToken,
+      'EX',
+      expiresIn,
+    );
 
     return {
       tokens,
@@ -77,7 +100,9 @@ export class AuthService {
     return {
       statuscode: 0,
       message: 'User registered successfully',
-      id: user.id,
+      data: {
+        id: user.id,
+      },
     };
   }
 }

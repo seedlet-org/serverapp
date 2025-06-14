@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { LocalStrategy } from './local-auth.strategy';
 import { JwtStrategy } from './jwt-auth.strategy';
+import { JwtRefreshStrategy } from './jwt-refresh.strategy';
 import { UsersService } from 'src/users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
@@ -30,6 +31,7 @@ import { RedisModule } from 'src/redis/redis.module';
     AuthService,
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     UsersService,
     PrismaService,
   ],
