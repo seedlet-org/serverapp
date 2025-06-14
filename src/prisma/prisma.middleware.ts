@@ -1,4 +1,4 @@
-import { hashPassword } from '../utils/helpers.utils';
+import { hashValue } from '../utils/helpers.utils';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient().$extends({
@@ -6,13 +6,13 @@ const prisma = new PrismaClient().$extends({
     user: {
       create({ args, query }) {
         if (args.data.password) {
-          args.data.password = hashPassword(args.data.password);
+          args.data.password = hashValue(args.data.password);
         }
         return query(args);
       },
       update({ args, query }) {
         if (args.data.password) {
-          args.data.password = hashPassword(args.data.password as string);
+          args.data.password = hashValue(args.data.password as string);
         }
         return query(args);
       },

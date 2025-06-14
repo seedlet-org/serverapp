@@ -1,43 +1,53 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
-import { comparePassword } from 'src/utils/helpers.utils';
+import { compareValue, hashValue } from 'src/utils/helpers.utils';
 import { LoginDTO, RegistrationDTO } from './dto/auth.dto';
 import prisma from 'src/prisma/prisma.middleware';
 import { User } from '@prisma/client';
-
+import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
+import { REDIS_CLIENT } from 'src/constants';
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
   async validateUser(input: LoginDTO) {
     const user = await this.usersService.user(input.userid);
-    if (user && comparePassword(input.password, user.password)) {
+    if (user && compareValue(input.password, user.password)) {
       return user;
     }
     return null;
   }
 
-  login(user: User) {
+  async login(user: User) {
     const payload = {
       username: user.username,
       email: user.email,
       sub: user.id,
     };
+
+    // Generate access and refresh tokens
+    const tokens = {
+      access_token: this.jwtService.sign(payload),
+      refresh_token: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION'),
+      }),
+    };
+
+    // hash and save refresh token in redis
+    const hashedRefreshToken = hashValue(tokens.refresh_token);
+    await this.redis.set(`auth:user:refresh:${user.id}`, hashedRefreshToken);
+
     return {
-      statuscode: 0,
-      message: 'Logged in successfully',
-      data: {
-        access_token: this.jwtService.sign(payload),
-        email: user.email,
-        username: user.username,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        profileUpdated: user.profileUpdated,
-      },
+      tokens,
+      user,
     };
   }
 
