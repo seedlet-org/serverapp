@@ -7,7 +7,7 @@ import prisma from 'src/prisma/prisma.middleware';
 import { User } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { REDIS_CLIENT } from 'src/constants';
+import { REDIS_CLIENT, RedisKeys } from 'src/constants';
 @Injectable()
 export class AuthService {
   constructor(
@@ -27,7 +27,7 @@ export class AuthService {
 
   async validateRefreshToken(user_id: string, refresh_token: string) {
     const hashedTokenInRedis = await this.redis.get(
-      `auth:user:refresh_token:${user_id}`,
+      `${RedisKeys.RefreshToken}:${user_id}`,
     );
     if (!hashedTokenInRedis) {
       return null;
@@ -61,12 +61,8 @@ export class AuthService {
     // hash and save refresh token in redis
     const hashedRefreshToken = hashValue(tokens.refresh_token);
     const expiresIn = 7 * 24 * 60 * 60; // 7days in seconds
-    await this.redis.set(
-      `auth:user:refresh_token:${user.id}`,
-      hashedRefreshToken,
-      'EX',
-      expiresIn,
-    );
+    const key = `${RedisKeys.RefreshToken}:${user.id}`;
+    await this.redis.set(key, hashedRefreshToken, 'EX', expiresIn);
 
     return {
       tokens,
