@@ -167,7 +167,7 @@ export class AuthService {
       Your One-Time-Password (OTP) is: <strong>${otp}</strong>.<br/><br>
       This OTP is valid for the next <strong>5 minutes</strong><br/><br/>
       If you did not request this, please ignore this email.<br/><br/>
-      Thanks,
+      Thanks,<br/>
       <strong>The Seedlet Team</strong>`,
     };
     await this.emailService.sendMail(payload);
