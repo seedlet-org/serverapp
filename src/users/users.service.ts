@@ -25,4 +25,6 @@ export class UsersService {
 
     return user;
   }
+
+  async;
 }

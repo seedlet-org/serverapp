@@ -104,7 +104,7 @@ export class AuthController {
 
     return {
       statusCode: 200,
-      message: 'OTP has been sent successfully',
+      message: 'OTP will arrive shortly',
       data: {
         email: response.email,
       },

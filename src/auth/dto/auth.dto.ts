@@ -37,6 +37,9 @@ export class RegistrationDTO {
   password: string;
   @ApiProperty()
   @IsString()
+  @Matches(/^[a-zA-Z0-9]+$/, {
+    message: 'Username can only contain letters and numbers',
+  })
   username: string;
   @ApiProperty()
   @IsString()
@@ -44,6 +47,11 @@ export class RegistrationDTO {
   @ApiProperty()
   @IsString()
   lastname: string;
+  @ApiProperty()
+  @IsString()
+  @MinLength(6)
+  @MaxLength(6)
+  otp: string;
 }
 
 export class SendOtpDTO {
