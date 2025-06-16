@@ -10,6 +10,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailModule } from './email/email.module';
     UsersModule,
     AuthModule,
     EmailModule,
+    HttpModule,
   ],
   controllers: [AppController],
   providers: [

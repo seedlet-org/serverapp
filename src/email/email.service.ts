@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { emailDTO } from './dto/email.dto';
@@ -23,7 +23,7 @@ export class EmailService {
       });
 
     if (response.status !== 200) {
-      throw new HttpException('Failed to send mail', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Failed to send mail');
     }
   }
 }

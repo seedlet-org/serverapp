@@ -8,6 +8,7 @@ export class emailDTO {
   @ApiProperty()
   @IsString()
   subject: string;
+  @ApiProperty()
   @IsEmail()
   to: string;
 }

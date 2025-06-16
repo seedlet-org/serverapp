@@ -11,11 +11,14 @@ import { UsersService } from 'src/users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { RedisModule } from 'src/redis/redis.module';
+import { EmailService } from 'src/email/email.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     UsersModule,
     RedisModule,
+    HttpModule,
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -34,6 +37,7 @@ import { RedisModule } from 'src/redis/redis.module';
     JwtRefreshStrategy,
     UsersService,
     PrismaService,
+    EmailService,
   ],
   controllers: [AuthController],
 })
