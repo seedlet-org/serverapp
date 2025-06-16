@@ -17,7 +17,7 @@ export class UsersController {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...data } = user;
     return {
-      statuscode: 0,
+      statusCode: 200,
       message: 'User retrieved successfully',
       data,
     };

@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { LoginDTO, RegistrationDTO } from './dto/auth.dto';
+import {
+  LoginDTO,
+  RegistrationDTO,
+  ResetPasswordDTO,
+  SendOtpDTO,
+} from './dto/auth.dto';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
@@ -56,7 +61,7 @@ export class AuthController {
     const result = await this.handleTokenAsCookie(user, response);
 
     return {
-      statuscode: 0,
+      statusCode: 200,
       message: 'Logged in successfully',
       data: {
         ...result,
@@ -82,10 +87,42 @@ export class AuthController {
     const result = await this.handleTokenAsCookie(user, res);
 
     return {
-      statuscode: 0,
+      statusCode: 200,
       message: 'Token refreshed successfully',
       data: {
         ...result,
+      },
+    };
+  }
+
+  @Throttle({ default: { limit: 1, ttl: 300000 } })
+  @Post('otp')
+  async sendOtp(@Body() input: SendOtpDTO) {
+    const response = (await this.authService.sendOtp(input)) as {
+      email: string;
+    };
+
+    return {
+      statusCode: 200,
+      message: 'OTP has been sent successfully',
+      data: {
+        email: response.email,
+      },
+    };
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() input: ResetPasswordDTO) {
+    const response = (await this.authService.resetPassword(input)) as User;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...user } = response;
+
+    return {
+      statusCode: 200,
+      message: 'Password reset successfully',
+      data: {
+        ...user,
       },
     };
   }
