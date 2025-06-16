@@ -86,8 +86,22 @@ export class AuthService {
   }
 
   async register(input: RegistrationDTO) {
-    const { email, username, password, lastname, firstname } = input;
+    const { email, username, password, lastname, firstname, otp } = input;
 
+    // validate otp
+    const key = `${RedisKeys.OTP}:${email}`;
+    const hashedOTPSavedInDB = await this.redis.get(key);
+    if (!hashedOTPSavedInDB) {
+      throw new ForbiddenException('Invalid or expired otp');
+    }
+
+    // compare hashed otp and otp
+    const otpMatch = compareValue(otp, hashedOTPSavedInDB);
+    if (!otpMatch) {
+      throw new ForbiddenException('Invalid or expired otp');
+    }
+
+    // check if user already exist
     const isExisting = await prisma.user.findFirst({
       where: {
         OR: [{ email }, { username }],
@@ -107,6 +121,27 @@ export class AuthService {
         password,
       },
     });
+
+    const payload: IEmail = {
+      to: email,
+      subject: 'Seedlet account creation',
+      message: `Hi ${firstname},<br/><br/>
+      Welcome to Seedlet.<br>
+      We're thrilled to have you onboard<br/><br/>
+      You've just taken the first step toward turning your ideas into real, collaborative project.<br/><br/>
+      Here's what you can do next:<br/>
+      <ul>
+      <li>Post an idea - share what you're dreaming of.</li>
+      <li>Gather interest - watch others rally around your spark.</li>
+      <li>Grow your Lab - turn your idea into a Lab where development happens</li>
+      <li>Show off your Field - complete Labs are proudly featured in our Field.</li>
+      </ul>
+      <br/>
+      We can't wait to see what you'll build.<br/><br/>
+      Let's plant something amazing.<br>
+      <strong>The Seedlet Team</strong>`,
+    };
+    await this.emailService.sendMail(payload);
 
     return {
       statusCode: 200,
@@ -128,7 +163,12 @@ export class AuthService {
     const payload: IEmail = {
       to: email,
       subject: 'Seedlet OTP',
-      message: `Your one time password is <strong>${otp}</strong>.<br>It is valid for 5 minutes`,
+      message: `Hi there,<br/><br/>
+      Your One-Time-Password (OTP) is: <strong>${otp}</strong>.<br/><br>
+      This OTP is valid for the next <strong>5 minutes</strong><br/><br/>
+      If you did not request this, please ignore this email.<br/><br/>
+      Thanks,
+      <strong>The Seedlet Team</strong>`,
     };
     await this.emailService.sendMail(payload);
 
