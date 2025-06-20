@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsString } from 'class-validator';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { IsBoolean, IsEmail, IsString, IsUrl } from 'class-validator';
 
 export class UserDTO {
   @ApiProperty()
@@ -17,7 +17,7 @@ export class UserDTO {
   lastname: string;
   @IsString()
   title: string;
-  @IsString()
+  @IsUrl()
   imageUrl: string;
   @IsString()
   country: string;
@@ -26,9 +26,17 @@ export class UserDTO {
   @IsString()
   bio: string;
   @IsString()
-  socialLinks: string;
+  socialLinks: Record<string, string>;
   @IsBoolean()
-  profileUpdated: string;
+  profileUpdated: boolean;
   @IsString()
-  status: string;
+  status: 'Active' | 'Inactive';
 }
+
+export class UpdateUserDto extends OmitType(UserDTO, [
+  'id',
+  'email',
+  'username',
+  'password',
+  'status',
+] as const) {}

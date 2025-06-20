@@ -22,6 +22,7 @@ model User {
   socialLinks     Json?         @map("social_links")
   profileUpdated  Boolean       @default(false) @map("profile_updated")
   status          AccountStatus @default(Active)
+  deletedAt       DateTime?     @map("deleted_at")
 
   ideas             Idea[]
   interests         Interest[]
