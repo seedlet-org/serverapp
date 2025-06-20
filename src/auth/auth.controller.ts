@@ -41,6 +41,7 @@ export class AuthController {
       username: user.username,
       firstname: user.firstname,
       lastname: user.lastname,
+      role: user.role,
       profileUpdated: user.profileUpdated,
     };
   }

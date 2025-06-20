@@ -62,6 +62,7 @@ export class AuthService {
       username: user.username,
       email: user.email,
       sub: user.id,
+      role: user.role,
     };
 
     // Generate access and refresh tokens

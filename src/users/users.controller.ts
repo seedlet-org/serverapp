@@ -8,6 +8,7 @@ import {
   Patch,
   UseGuards,
   Delete,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -147,13 +148,16 @@ export class UsersController {
     description: 'Soft-deletes a user by their unique ID.',
   })
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    const user = (await this.usersService.softDelete(id)) as User;
+  async delete(@Param('id') id: string, @CurrentUser() user: User) {
+    if (user.id !== id) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
+    const deletedUser = (await this.usersService.softDelete(id)) as User;
     return {
       statusCode: 200,
       message: 'User deleted successfully',
       data: {
-        id: user.id,
+        id: deletedUser.id,
       },
     };
   }

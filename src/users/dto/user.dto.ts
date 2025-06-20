@@ -20,6 +20,8 @@ export class UserDTO {
   @IsUrl()
   imageUrl: string;
   @IsString()
+  role: 'User' | 'Admin';
+  @IsString()
   country: string;
   @IsString()
   state: string;
@@ -39,4 +41,5 @@ export class UpdateUserDto extends OmitType(UserDTO, [
   'username',
   'password',
   'status',
+  'role',
 ] as const) {}
