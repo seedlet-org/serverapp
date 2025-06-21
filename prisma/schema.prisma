@@ -16,12 +16,14 @@ model User {
   lastname        String        @db.VarChar(100)
   title           String?       @db.VarChar(20)
   imageUrl        String?       @db.VarChar(200) @map("image_url")
+  role            Role          @default(User)
   country         String?       @db.VarChar(50)
   state           String?       @db.VarChar(50)
   bio             String?       @db.VarChar(100)
   socialLinks     Json?         @map("social_links")
   profileUpdated  Boolean       @default(false) @map("profile_updated")
   status          AccountStatus @default(Active)
+  deletedAt       DateTime?     @map("deleted_at")
 
   ideas             Idea[]
   interests         Interest[]
@@ -206,6 +208,11 @@ model Notification {
 enum AccountStatus {
   Active
   Inactive
+}
+
+enum Role {
+  User
+  Admin
 }
 
 enum IdeaStatus {

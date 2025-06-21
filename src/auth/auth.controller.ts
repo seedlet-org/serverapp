@@ -18,6 +18,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -40,12 +41,17 @@ export class AuthController {
       username: user.username,
       firstname: user.firstname,
       lastname: user.lastname,
+      role: user.role,
       profileUpdated: user.profileUpdated,
     };
   }
 
   @UseGuards(AuthGuard('local'))
   @Throttle({ default: { limit: 3, ttl: 5000 } })
+  @ApiOperation({
+    summary: 'User login',
+    description: 'Logs in a user and returns access tokens.',
+  })
   @Post('login')
   async login(
     @Body() input: LoginDTO,
@@ -69,12 +75,21 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({
+    summary: 'User registration',
+    description:
+      'Registers a new user and returns access tokens and user information.',
+  })
   @Post('register')
   register(@Body() input: RegistrationDTO) {
     return this.authService.register(input);
   }
 
   @UseGuards(AuthGuard('jwt-refresh'))
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Refreshes the access token using a valid refresh token.',
+  })
   @Post('refresh')
   async refresh(
     @Req() req: Request,
@@ -96,6 +111,10 @@ export class AuthController {
   }
 
   @Throttle({ default: { limit: 1, ttl: 300000 } })
+  @ApiOperation({
+    summary: 'Send OTP to email',
+    description: "Sends an OTP to the user's email",
+  })
   @Post('otp')
   async sendOtp(@Body() input: SendOtpDTO) {
     const response = (await this.authService.sendOtp(input)) as {
@@ -111,12 +130,15 @@ export class AuthController {
     };
   }
 
+  @ApiOperation({
+    summary: 'Reset password',
+    description: 'Resets the user password using a valid OTP.',
+  })
   @Post('reset-password')
   async resetPassword(@Body() input: ResetPasswordDTO) {
     const response = (await this.authService.resetPassword(input)) as User;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = response;
+    const { password: _password, ...user } = response;
 
     return {
       statusCode: 200,
