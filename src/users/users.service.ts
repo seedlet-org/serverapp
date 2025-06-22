@@ -8,7 +8,8 @@ export class UsersService {
   async user(userid: string): Promise<User | null> {
     return prisma.user.findFirst({
       where: {
-        OR: [{ email: userid }, { username: userid }, { deletedAt: null }],
+        OR: [{ email: userid }, { username: userid }],
+        deletedAt: null,
       },
     });
   }

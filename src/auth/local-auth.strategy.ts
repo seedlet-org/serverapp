@@ -16,7 +16,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     const user = await this.authService.validateUser({ userid, password });
     if (!user) {
       throw new BadRequestException(
-        'Invalid email or password. Please try again.',
+        `Invalid email or password. Please try again. ${user}`,
       );
     }
     return user;
