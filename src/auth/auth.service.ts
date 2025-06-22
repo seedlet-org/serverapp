@@ -194,9 +194,6 @@ export class AuthService {
       throw new ForbiddenException('Invalid or expired otp');
     }
 
-    // hash password
-    const hashedPassword = hashValue(password);
-
     // Get current user
     const currentUser = await prisma.user.findUnique({
       where: { email },
@@ -219,7 +216,7 @@ export class AuthService {
         email,
       },
       data: {
-        password: hashedPassword,
+        password,
       },
     });
 
