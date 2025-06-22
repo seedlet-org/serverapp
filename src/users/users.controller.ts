@@ -4,18 +4,20 @@ import {
   Get,
   NotFoundException,
   Param,
-  Put,
   Patch,
   UseGuards,
   Delete,
   ForbiddenException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
 import { UpdateUserDto } from './dto/user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiBearerAuth()
 @Controller('users')
@@ -97,40 +99,58 @@ export class UsersController {
     };
   }
 
+  // @UseGuards(AuthGuard('jwt'))
+  // @ApiOperation({
+  //   summary: 'Update user by ID',
+  //   description: 'Updates the details of a user by their unique ID.',
+  // })
+  // @Put(':id')
+  // async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   const updatedUser = (await this.usersService.update(
+  //     id,
+  //     updateUserDto,
+  //   )) as User;
+
+  //   const { password: _password, ...user } = updatedUser;
+
+  //   return {
+  //     statusCode: 200,
+  //     message: 'User updated successfully',
+  //     data: user,
+  //   };
+  // }
+
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({
-    summary: 'Update user by ID',
-    description: 'Updates the details of a user by their unique ID.',
-  })
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    const updatedUser = (await this.usersService.update(
-      id,
-      updateUserDto,
-    )) as User;
-
-    const { password: _password, ...user } = updatedUser;
-
-    return {
-      statusCode: 200,
-      message: 'User updated successfully',
-      data: user,
-    };
-  }
-
-  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB max
+      },
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/png'];
+        if (allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only PNG files are allowed'), false);
+        }
+      },
+    }),
+  )
   @ApiOperation({
     summary: 'Partially update user by ID',
     description: 'Partially updates the details of a user by their unique ID.',
   })
+  @ApiConsumes('multipart/form-data')
   @Patch(':id')
   async patch(
     @Param('id') id: string,
-    @Body() updateUserDto: Partial<UpdateUserDto>,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() image: Express.Multer.File,
   ) {
     const updatedUser = (await this.usersService.update(
       id,
       updateUserDto,
+      image,
     )) as User;
 
     const { password: _password, ...user } = updatedUser;

@@ -1,45 +1,40 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { IsBoolean, IsEmail, IsString, IsUrl } from 'class-validator';
-
-export class UserDTO {
-  @ApiProperty()
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
+export class UpdateUserDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  id: string;
+  username?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  username: string;
-  @IsEmail()
-  email: string;
+  firstname?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  password: string;
+  lastname?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  firstname: string;
-  @IsString()
-  lastname: string;
-  @IsString()
-  title: string;
+  title?: string;
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
+  @IsOptional()
   @IsUrl()
-  imageUrl: string;
+  image?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  role: 'User' | 'Admin';
+  country?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  country: string;
+  state?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  state: string;
+  bio?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  bio: string;
-  @IsString()
-  socialLinks: Record<string, string>;
-  @IsBoolean()
-  profileUpdated: boolean;
-  @IsString()
-  status: 'Active' | 'Inactive';
+  socialLinks?: Record<string, string>;
 }
-
-export class UpdateUserDto extends OmitType(UserDTO, [
-  'id',
-  'email',
-  'username',
-  'password',
-  'status',
-  'role',
-] as const) {}

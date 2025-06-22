@@ -15,7 +15,7 @@ model User {
   firstname       String        @db.VarChar(100)
   lastname        String        @db.VarChar(100)
   title           String?       @db.VarChar(20)
-  imageUrl        String?       @db.VarChar(200) @map("image_url")
+  image        String?       @db.VarChar(200) @map("image")
   role            Role          @default(User)
   country         String?       @db.VarChar(50)
   state           String?       @db.VarChar(50)

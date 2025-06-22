@@ -1,10 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import prisma from 'src/prisma/prisma.middleware';
 import { User } from '@prisma/client';
 import { UpdateUserDto } from './dto/user.dto';
+import { SupabaseService } from 'src/supabase/supabase.service';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly supabaseService: SupabaseService) {}
+
   async user(userid: string): Promise<User | null> {
     return prisma.user.findFirst({
       where: {
@@ -43,25 +55,59 @@ export class UsersService {
     return user;
   }
 
-  async update(
-    id: string,
-    input: Partial<UpdateUserDto>,
-  ): Promise<User | null> {
-    const user = await prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        ...input,
-        profileUpdated: true,
-      },
-    });
+  async update(id: string, input: UpdateUserDto, image?: Express.Multer.File) {
+    try {
+      let imageUrl: string | undefined;
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+      if (image) {
+        const supabase = this.supabaseService.getClient();
+        const bucket = 'seedlet';
+        const filePath = `users/${Date.now()}-${image.originalname}`;
+
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, image.buffer, {
+            contentType: image.mimetype,
+            upsert: true,
+          });
+
+        if (error) {
+          throw new InternalServerErrorException(
+            `Upload failed: ${error.message}`,
+          );
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
+      if (imageUrl) {
+        input.image = imageUrl;
+      }
+
+      const user = await prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          ...input,
+          profileUpdated: true,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new BadRequestException('User already exists');
+      }
     }
-
-    return user;
   }
 
   async softDelete(id: string): Promise<User | null> {
