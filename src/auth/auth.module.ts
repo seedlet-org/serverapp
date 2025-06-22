@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { RedisModule } from 'src/redis/redis.module';
 import { EmailService } from 'src/email/email.service';
 import { HttpModule } from '@nestjs/axios';
+import { SupabaseService } from 'src/supabase/supabase.service';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { HttpModule } from '@nestjs/axios';
     UsersService,
     PrismaService,
     EmailService,
+    SupabaseService,
   ],
   controllers: [AuthController],
 })

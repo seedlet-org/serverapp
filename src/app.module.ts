@@ -11,6 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
 import { HttpModule } from '@nestjs/axios';
+import { SupabaseService } from './supabase/supabase.service';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { HttpModule } from '@nestjs/axios';
       useClass: ThrottlerGuard,
     },
     EmailService,
+    SupabaseService,
   ],
 })
 export class AppModule {}
