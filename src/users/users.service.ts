@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
   Injectable,
@@ -105,7 +102,7 @@ export class UsersService {
       return user;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        throw new BadRequestException('User already exists');
+        throw new BadRequestException(error.message);
       }
     }
   }

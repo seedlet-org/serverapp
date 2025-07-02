@@ -19,7 +19,7 @@ model User {
   role            Role          @default(User)
   country         String?       @db.VarChar(50)
   state           String?       @db.VarChar(50)
-  bio             String?       @db.VarChar(100)
+  bio             String?       @db.VarChar(225)
   socialLinks     Json?         @map("social_links")
   profileUpdated  Boolean       @default(false) @map("profile_updated")
   status          AccountStatus @default(Active)
