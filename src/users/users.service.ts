@@ -91,6 +91,10 @@ export class UsersService {
         },
         data: {
           ...input,
+          socialLinks: JSON.parse(input.socialLinks as string) as Record<
+            string,
+            string
+          >,
           profileUpdated: true,
         },
       });

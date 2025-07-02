@@ -36,5 +36,6 @@ export class UpdateUserDto {
   bio?: string;
   @ApiProperty({ required: false })
   @IsOptional()
-  socialLinks?: Record<string, string>;
+  @IsString()
+  socialLinks?: string;
 }
