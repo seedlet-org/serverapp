@@ -105,7 +105,7 @@ export class UsersService {
       return user;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        throw new BadRequestException('User already exists');
+        throw new BadRequestException(error.message);
       }
     }
   }
