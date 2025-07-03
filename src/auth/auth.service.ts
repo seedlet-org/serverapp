@@ -226,7 +226,7 @@ export class AuthService {
     return user;
   }
 
-  async logout(user_id) {
+  async logout(user_id: string) {
     const key = `${RedisKeys.RefreshToken}:${user_id}`;
     await this.redis.del(key);
 

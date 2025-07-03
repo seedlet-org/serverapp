@@ -150,6 +150,7 @@ export class AuthController {
     };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
     summary: 'Logout',
     description: 'Logout from current session',
