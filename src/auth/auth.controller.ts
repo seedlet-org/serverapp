@@ -18,7 +18,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
 
 @Controller('auth')
@@ -150,6 +150,7 @@ export class AuthController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
     summary: 'Logout',
