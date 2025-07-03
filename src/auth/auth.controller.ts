@@ -30,9 +30,9 @@ export class AuthController {
 
     response.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/auth/refresh',
+      secure: true,
+      sameSite: 'none',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
     });
 
@@ -93,9 +93,10 @@ export class AuthController {
   })
   @Post('refresh')
   async refresh(
-    @CurrentUser() user: User,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const user = req.user as User;
     if (!user) {
       throw new BadRequestException('User not found');
     }
@@ -166,8 +167,8 @@ export class AuthController {
     }
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
     });
 
     return {
