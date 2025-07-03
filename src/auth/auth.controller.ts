@@ -86,16 +86,16 @@ export class AuthController {
     return this.authService.register(input);
   }
 
+  @UseGuards(AuthGuard('jwt-refresh'))
   @ApiOperation({
     summary: 'Refresh access token',
     description: 'Refreshes the access token using a valid refresh token.',
   })
   @Post('refresh')
   async refresh(
-    @Req() req: Request,
+    @CurrentUser() user: User,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user as User;
     if (!user) {
       throw new BadRequestException('User not found');
     }
