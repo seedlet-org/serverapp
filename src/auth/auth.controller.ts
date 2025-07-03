@@ -86,7 +86,6 @@ export class AuthController {
     return this.authService.register(input);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
   @ApiOperation({
     summary: 'Refresh access token',
     description: 'Refreshes the access token using a valid refresh token.',
