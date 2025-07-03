@@ -30,9 +30,9 @@ export class AuthController {
 
     response.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/auth/refresh',
+      secure: true,
+      sameSite: 'none',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
     });
 
@@ -86,6 +86,7 @@ export class AuthController {
     return this.authService.register(input);
   }
 
+  @UseGuards(AuthGuard('jwt-refresh'))
   @ApiOperation({
     summary: 'Refresh access token',
     description: 'Refreshes the access token using a valid refresh token.',
@@ -166,8 +167,8 @@ export class AuthController {
     }
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
     });
 
     return {
