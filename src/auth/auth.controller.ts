@@ -18,7 +18,8 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -146,6 +147,33 @@ export class AuthController {
       data: {
         ...user,
       },
+    };
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: 'Logout',
+    description: 'Logout from current session',
+  })
+  @Post('logout')
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user: User,
+  ) {
+    const result = await this.authService.logout(user.id);
+    if (!result) {
+      throw new BadRequestException('Something went wrong');
+    }
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return {
+      statusCode: 200,
+      message: 'Logged out successfully',
     };
   }
 }
