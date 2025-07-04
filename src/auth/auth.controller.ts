@@ -40,10 +40,7 @@ export class AuthController {
           ? 'strict'
           : 'lax',
       path: '/',
-      domain:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'seedlet-api.onrender.com'
-          : 'localhost',
+      domain: this.configService.get<string>('DOMAIN'),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
     });
 
