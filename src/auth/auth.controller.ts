@@ -20,19 +20,30 @@ import { Request, Response } from 'express';
 import { User } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   async handleTokenAsCookie(user: User, response: Response) {
     const { tokens } = await this.authService.login(user);
 
     response.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'strict'
+          : 'lax',
       path: '/',
+      domain:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'seedlet-api.onrender.com'
+          : 'localhost',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
     });
 
@@ -167,8 +178,16 @@ export class AuthController {
     }
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'strict'
+          : 'lax',
+      path: '/',
+      domain:
+        this.configService.get<string>('NODE_ENV') === 'production'
+          ? 'seedlet-api.onrender.com'
+          : 'localhost',
     });
 
     return {
