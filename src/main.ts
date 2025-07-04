@@ -25,7 +25,11 @@ async function bootstrap() {
   SwaggerModule.setup('api/v1', app, documentFactory);
 
   app.enableCors({
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://seedlet-api.onrender.com',
+    ],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
