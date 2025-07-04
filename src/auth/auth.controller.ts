@@ -34,13 +34,9 @@ export class AuthController {
 
     response.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-      sameSite:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'strict'
-          : 'lax',
+      secure: true,
+      sameSite: 'none',
       path: '/',
-      domain: this.configService.get<string>('DOMAIN'),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7days
     });
 
@@ -175,13 +171,9 @@ export class AuthController {
     }
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-      sameSite:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'strict'
-          : 'lax',
+      secure: true,
+      sameSite: 'none',
       path: '/',
-      domain: this.configService.get<string>('DOMAIN'),
     });
 
     return {
