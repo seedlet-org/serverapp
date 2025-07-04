@@ -184,10 +184,7 @@ export class AuthController {
           ? 'strict'
           : 'lax',
       path: '/',
-      domain:
-        this.configService.get<string>('NODE_ENV') === 'production'
-          ? 'seedlet-api.onrender.com'
-          : 'localhost',
+      domain: this.configService.get<string>('DOMAIN'),
     });
 
     return {
