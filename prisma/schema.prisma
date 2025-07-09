@@ -52,7 +52,7 @@ model Idea {
   refId           String?     @map("ref_id") @db.Uuid
   status          IdeaStatus  @default(Published)
   neededRoles     String[]    @map("needed_roles")
-  tags            String[]    
+  tags            Tag[]       @relation("IdeaTags")
 
   owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   parent          Idea?       @relation("commentOnIdea", fields: [refId], references: [id])
@@ -64,6 +64,14 @@ model Idea {
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
   @@map("ideas")
+}
+
+model Tag {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String    @unique
+  items       Idea[]    @relation("IdeaTags")
+
+  @@map("tags")
 }
 
 model Interest {
