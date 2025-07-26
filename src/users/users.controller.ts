@@ -14,12 +14,15 @@ import {
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
-import { User } from '@prisma/client';
+import { RoleType, User } from '@prisma/client';
 import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
 import { UpdateUserDto } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiBearerAuth()
+@UseGuards(RolesGuard)
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -51,6 +54,7 @@ export class UsersController {
     description: 'Returns a list of all registered users.',
   })
   @Get()
+  @Roles(RoleType.superAdmin)
   async users() {
     const users = await this.usersService.users();
 
@@ -168,7 +172,8 @@ export class UsersController {
     description: 'Soft-deletes a user by their unique ID.',
   })
   @Delete(':id')
-  async delete(@Param('id') id: string, @CurrentUser() user: User) {
+  @Roles(RoleType.user)
+  async deleteOwnAccount(@Param('id') id: string, @CurrentUser() user: User) {
     if (user.id !== id) {
       throw new ForbiddenException('You can only delete your own account');
     }
