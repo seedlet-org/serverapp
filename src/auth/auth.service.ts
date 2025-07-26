@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -16,12 +17,14 @@ import {
   SendOtpDTO,
 } from './dto/auth.dto';
 import prisma from 'src/prisma/prisma.middleware';
-import { User } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { REDIS_CLIENT, RedisKeys } from 'src/constants';
 import { EmailService } from 'src/email/email.service';
 import { IEmail } from 'src/email/interface/email.interface';
+import { userWithRole } from 'src/common/types';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -57,12 +60,12 @@ export class AuthService {
     return this.usersService.findById(user_id);
   }
 
-  async login(user: User) {
+  async login(user: userWithRole) {
     const payload = {
       username: user.username,
       email: user.email,
-      sub: user.id,
       role: user.role,
+      sub: user.id,
     };
 
     // Generate access and refresh tokens
@@ -88,6 +91,15 @@ export class AuthService {
 
   async register(input: RegistrationDTO) {
     const { email, username, password, lastname, firstname, otp } = input;
+    const role = await prisma.role.findUnique({
+      where: {
+        name: RoleType.user,
+      },
+    });
+
+    if (!role) {
+      throw new BadGatewayException('Error creating account');
+    }
 
     // validate otp
     const key = `${RedisKeys.OTP}:${email}`;
@@ -119,6 +131,7 @@ export class AuthService {
         username: username.trim(),
         firstname: firstname.trim(),
         lastname: lastname.trim(),
+        roleId: role.id,
         password,
       },
     });

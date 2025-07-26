@@ -12,6 +12,7 @@ import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
 import { HttpModule } from '@nestjs/axios';
 import { SupabaseService } from './supabase/supabase.service';
+import { IdeaModule } from './idea/idea.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { SupabaseService } from './supabase/supabase.service';
     AuthModule,
     EmailModule,
     HttpModule,
+    IdeaModule,
   ],
   controllers: [AppController],
   providers: [
