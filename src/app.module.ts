@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
@@ -12,6 +10,7 @@ import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
 import { HttpModule } from '@nestjs/axios';
 import { SupabaseService } from './supabase/supabase.service';
+import { IdeaModule } from './idea/idea.module';
 
 @Module({
   imports: [
@@ -32,10 +31,9 @@ import { SupabaseService } from './supabase/supabase.service';
     AuthModule,
     EmailModule,
     HttpModule,
+    IdeaModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     PrismaService,
     {
       provide: APP_GUARD,

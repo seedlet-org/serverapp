@@ -21,6 +21,7 @@ import { User } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
 import { ConfigService } from '@nestjs/config';
+import { userWithRole } from 'src/common/types';
 
 @Controller('auth')
 export class AuthController {
@@ -29,7 +30,7 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
-  async handleTokenAsCookie(user: User, response: Response) {
+  async handleTokenAsCookie(user: userWithRole, response: Response) {
     const { tokens } = await this.authService.login(user);
 
     response.cookie('refresh_token', tokens.refresh_token, {
@@ -46,7 +47,7 @@ export class AuthController {
       username: user.username,
       firstname: user.firstname,
       lastname: user.lastname,
-      role: user.role,
+      role: user.roleId,
       profileUpdated: user.profileUpdated,
     };
   }
@@ -100,7 +101,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user as User;
+    const user = req.user as userWithRole;
     if (!user) {
       throw new BadRequestException('User not found');
     }

@@ -9,16 +9,20 @@ import { User } from '@prisma/client';
 import { UpdateUserDto } from './dto/user.dto';
 import { SupabaseService } from 'src/supabase/supabase.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { userWithRole } from 'src/common/types';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async user(userid: string): Promise<User | null> {
+  async user(userid: string): Promise<userWithRole | null> {
     return prisma.user.findFirst({
       where: {
         OR: [{ email: userid }, { username: userid }],
         deletedAt: null,
+      },
+      include: {
+        role: true,
       },
     });
   }
