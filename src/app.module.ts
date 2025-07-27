@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
@@ -35,9 +33,7 @@ import { IdeaModule } from './idea/idea.module';
     HttpModule,
     IdeaModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     PrismaService,
     {
       provide: APP_GUARD,

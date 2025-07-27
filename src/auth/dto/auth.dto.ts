@@ -52,10 +52,6 @@ export class RegistrationDTO {
   @MinLength(6)
   @MaxLength(6)
   otp: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  role: string; // role_id
 }
 
 export class SendOtpDTO {
