@@ -19,7 +19,7 @@ import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { User } from '@prisma/client';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { ConfigService } from '@nestjs/config';
 import { userWithRole } from 'src/common/types';
 
@@ -47,7 +47,7 @@ export class AuthController {
       username: user.username,
       firstname: user.firstname,
       lastname: user.lastname,
-      role: user.roleId,
+      role: user.role,
       profileUpdated: user.profileUpdated,
     };
   }

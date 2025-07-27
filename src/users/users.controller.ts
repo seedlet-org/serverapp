@@ -15,7 +15,7 @@ import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { RoleType, User } from '@prisma/client';
-import { CurrentUser } from 'src/common/decorators/currrent-user.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { UpdateUserDto } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -58,9 +58,17 @@ export class UsersController {
   async users() {
     const users = await this.usersService.users();
 
+    if (users.length === 0) {
+      return {
+        statusCode: 200,
+        message: 'No user in record',
+        data: [],
+      };
+    }
+
     return {
       statusCode: 200,
-      message: 'All users retrieved successfully',
+      message: 'Users fetched successfully',
       data: users,
     };
   }
@@ -72,7 +80,12 @@ export class UsersController {
   })
   @Get(':id')
   async userByID(@Param('id') id: string) {
-    const user = (await this.usersService.findById(id)) as User;
+    const user = await this.usersService.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const { password: _password, ...data } = user;
     return {
       statusCode: 200,

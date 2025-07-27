@@ -127,8 +127,8 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
-        email: email.trim(),
-        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        username: username.trim().toLowerCase(),
         firstname: firstname.trim(),
         lastname: lastname.trim(),
         roleId: role.id,

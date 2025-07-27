@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -16,44 +17,71 @@ export class UsersService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
   async user(userid: string): Promise<userWithRole | null> {
-    return prisma.user.findFirst({
-      where: {
-        OR: [{ email: userid }, { username: userid }],
-        deletedAt: null,
-      },
-      include: {
-        role: true,
-      },
-    });
+    try {
+      return prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: userid.toLowerCase() },
+            { username: userid.toLowerCase() },
+          ],
+          deletedAt: null,
+        },
+        include: {
+          role: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+      throw new BadGatewayException('An error was encountered');
+    }
   }
 
-  async users(): Promise<Omit<User, 'password'>[]> {
-    const users = await prisma.user.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
+  async users(): Promise<Omit<User, 'password'>[] | []> {
+    try {
+      const users = await prisma.user.findMany({
+        where: {
+          deletedAt: null,
+        },
+      });
 
-    if (!users || users.length === 0) {
-      throw new NotFoundException('No users found');
+      return users.map(({ password: _password, ...user }) => user);
+    } catch (error: unknown) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw new BadRequestException();
     }
-
-    return users.map(({ password: _password, ...user }) => user);
   }
 
   async findById(id: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id,
+          deletedAt: null,
+        },
+      });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error: unknown) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+      throw new BadGatewayException('An error was encountered');
     }
-
-    return user;
   }
 
   async update(id: string, input: UpdateUserDto, image?: Express.Multer.File) {
@@ -108,29 +136,43 @@ export class UsersService {
       }
 
       return user;
-    } catch (error) {
-      if (error instanceof PrismaClientKnownRequestError) {
-        throw new BadRequestException(error.message);
+    } catch (error: unknown) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
       }
+      throw new BadGatewayException('An error was encountered');
     }
   }
 
   async softDelete(id: string): Promise<User | null> {
-    const user = await prisma.user.update({
-      where: {
-        id,
-        deletedAt: null,
-      },
-      data: {
-        status: 'Inactive',
-        deletedAt: new Date(),
-      },
-    });
+    try {
+      const user = await prisma.user.update({
+        where: {
+          id,
+          deletedAt: null,
+        },
+        data: {
+          status: 'Inactive',
+          deletedAt: new Date(),
+        },
+      });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error: unknown) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+      throw new BadGatewayException('An error was encountered');
     }
-
-    return user;
   }
 }
