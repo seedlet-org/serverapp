@@ -171,38 +171,38 @@ export class IdeaController {
     };
   }
 
-  // @ApiOperation({
-  //   summary: 'Comment an idea',
-  //   description: 'Add comment to an idea',
-  // })
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       comment: {
-  //         type: 'string',
-  //         example: 'This is a comment',
-  //       },
-  //     },
-  //   },
-  // })
-  // @Post(':id/comment')
-  // @Roles(RoleType.user)
-  // async comment(
-  //   @Param('id') ideaId: string,
-  //   @CurrentUser() user: User,
-  //   @Body() input: { comment: string },
-  // ) {
-  //   const response = await this.ideaService.comment(
-  //     user.id,
-  //     ideaId,
-  //     input.comment,
-  //   );
+  @ApiOperation({
+    summary: 'Comment an idea',
+    description: 'Add comment to an idea',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        comment: {
+          type: 'string',
+          example: 'This is a comment',
+        },
+      },
+    },
+  })
+  @Post(':id/comment')
+  @Roles(RoleType.user)
+  async comment(
+    @Param('id') ideaId: string,
+    @CurrentUser() user: User,
+    @Body() input: { comment: string },
+  ) {
+    const response = await this.ideaService.comment(
+      user.id,
+      ideaId,
+      input.comment,
+    );
 
-  //   return {
-  //     statusCode: 201,
-  //     message: 'Comment added successfully',
-  //     data: response,
-  //   };
-  // }
+    return {
+      statusCode: 201,
+      message: 'Comment added successfully',
+      data: response,
+    };
+  }
 }

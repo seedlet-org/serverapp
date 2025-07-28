@@ -363,29 +363,42 @@ export class IdeaService {
     }
   }
 
-  // async comment(userId: string, ideaId: string, comment: string) {
-  //   try {
-  //     const idea = await prisma.idea.findUnique({
-  //       where: {
-  //         id: ideaId,
-  //       },
-  //     });
-  //     if (!idea) {
-  //       throw new NotFoundException();
-  //     }
+  async comment(userId: string, ideaId: string, comment: string) {
+    try {
+      const idea = await prisma.idea.findUnique({
+        where: {
+          id: ideaId,
+        },
+      });
+      if (!idea) {
+        throw new NotFoundException();
+      }
 
-  //   } catch (error) {
-  //     if (
-  //       error instanceof PrismaClientKnownRequestError &&
-  //       error.code === 'P2023'
-  //     ) {
-  //       throw new BadRequestException('Invalid request parameter');
-  //     }
+      const response = await prisma.comment.create({
+        data: {
+          ownerId: userId,
+          refId: ideaId,
+          refType: 'Idea',
+          content: comment,
+        },
+        include: {
+          owner: true,
+        },
+      });
 
-  //     if (error instanceof NotFoundException) {
-  //       throw new NotFoundException('Idea not found');
-  //     }
-  //     throw new BadGatewayException('An error was encountered');
-  //   }
-  // }
+      return response;
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Idea not found');
+      }
+      throw new BadGatewayException('An error was encountered');
+    }
+  }
 }
