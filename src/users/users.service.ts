@@ -59,12 +59,15 @@ export class UsersService {
     }
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<userWithRole | null> {
     try {
       const user = await prisma.user.findUnique({
         where: {
           id,
           deletedAt: null,
+        },
+        include: {
+          role: true,
         },
       });
 
