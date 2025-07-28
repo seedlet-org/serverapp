@@ -35,8 +35,10 @@ model User {
   deletedAt       DateTime?     @map("deleted_at")
   roleId          String        @db.Uuid @map("role_id")
 
+  comments              Comment[]
   ideas                 Idea[]
   interests             Interest[]
+  likes                 Like[]
   LabDiscussions        LabDiscussion[]
   labsOwned             Lab[]             @relation("LabOwner")
   taskAssigned          Task[]            @relation("TaskAssignees")
@@ -55,19 +57,17 @@ model User {
 model Idea {
   id              String      @id @default(uuid()) @db.Uuid
   title           String      @db.VarChar(50)
-  description     String
-  linkCount       Int         @default(0) @map("like_count")
+  description     String      
+  likeCount       Int         @default(0) @map("like_count")
   commentCount    Int         @default(0) @map("comment_count")
   interestCount   Int         @default(0) @map("interest_count")
   ownerId         String      @db.Uuid    @map("owner_id")
-  refId           String?     @map("ref_id") @db.Uuid
+  // refId           String?     @map("ref_id") @db.Uuid
   status          IdeaStatus  @default(Published)
   neededRoles     String[]    @map("needed_roles")
   tags            Tag[]       @relation("IdeaTags")
 
   owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  parent          Idea?       @relation("commentOnIdea", fields: [refId], references: [id])
-  comments        Idea[]      @relation("commentOnIdea")
   interests       Interest[]
   lab             Lab?        @relation("IdeaLab")
 
@@ -77,10 +77,26 @@ model Idea {
   @@map("ideas")
 }
 
+model Comment {
+  id              String        @id @default(uuid()) @db.Uuid
+  content         String
+  ownerId         String        @db.Uuid    @map("owner_id")
+  likeCount       Int           @default(0) @map("like_count")
+  commentCount    Int           @default(0) @map("comment_count")
+  refId           String?         @map("ref_id") @db.Uuid
+  refType         CommentRefType
+
+  owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, refId, refType])
+  @@map("comments")
+
+}
+
 model Tag {
   id          String    @id @default(uuid()) @db.Uuid
   name        String    @unique
-  items       Idea[]    @relation("IdeaTags")
+  ideas       Idea[]    @relation("IdeaTags")
 
   @@map("tags")
 }
@@ -89,7 +105,7 @@ model Interest {
   id                String    @id @default(uuid()) @db.Uuid
   ideaId            String    @map("idea_id") @db.Uuid
   userId            String    @map("user_id") @db.Uuid
-  roleInterestedIn  String    @map("role_interested_in")
+  roleInterestedIn  String?    @map("role_interested_in")
 
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   idea              Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
@@ -100,6 +116,22 @@ model Interest {
   @@unique([userId, ideaId])
 
   @@map("interests")
+}
+
+model Like {
+  id                String        @id @default(uuid()) @db.Uuid
+  itemId            String        @map("item_id") @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  itemType          LikeItemType
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+
+  @@unique([userId, itemId, itemType])
+
+  @@map("likes")
 }
 
 model Lab {
@@ -272,4 +304,14 @@ enum NotificationType {
   LabOwnershipTransfer
   Reaction
   Reminder
+}
+
+enum LikeItemType {
+  Idea
+  Comment
+}
+
+enum CommentRefType {
+  Idea
+  Comment
 }

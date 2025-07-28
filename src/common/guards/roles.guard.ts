@@ -27,13 +27,6 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    // const role = await prisma.role.findUnique({
-    //   where: { id: user.roleId },
-    //   select: { name: true },
-    // });
-
-    // if (!role) return false;
-
     return requiredRoles.includes(role.name);
   }
 }

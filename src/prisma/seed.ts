@@ -13,22 +13,23 @@ async function main() {
         data: role,
       });
     }
+
+    const tags = [
+      { name: 'Web3' },
+      { name: 'AI/ML' },
+      { name: 'FinTech' },
+      { name: 'EdTech' },
+      { name: 'IoT' },
+      { name: 'E-commerce' },
+    ];
+
+    for (const tag of tags) {
+      await tx.tag.create({
+        data: tag,
+      });
+    }
   });
 
-  const tags = [
-    { name: 'Web3' },
-    { name: 'AI/ML' },
-    { name: 'FinTech' },
-    { name: 'EdTech' },
-    { name: 'IoT' },
-    { name: 'E-commerce' },
-  ];
-
-  for (const tag of tags) {
-    await prisma.tag.create({
-      data: tag,
-    });
-  }
   console.log('Seeding completed successfully.');
 }
 
