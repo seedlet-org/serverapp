@@ -35,8 +35,8 @@ export class IdeaController {
     description: 'Fetch all ideas that are published or in a lab.',
   })
   @Get()
-  async fetchAll() {
-    const ideas = await this.ideaService.getAll();
+  async findAll() {
+    const ideas = await this.ideaService.findAll();
     if (ideas.length === 0) {
       return {
         statusCode: 200,
@@ -57,8 +57,8 @@ export class IdeaController {
     description: 'Fetch an idea by its ID.',
   })
   @Get(':id')
-  async fetchOne(@Param('id') id: string) {
-    const idea = await this.ideaService.getById(id);
+  async findOne(@Param('id') id: string) {
+    const idea = await this.ideaService.findOne(id);
 
     if (!idea) {
       throw new NotFoundException('Idea not found');
@@ -131,7 +131,7 @@ export class IdeaController {
     summary: 'Like an idea',
     description: 'Like and unlike an idea',
   })
-  @Post(':id/like')
+  @Post(':id/likes')
   @Roles(RoleType.user)
   async LikeIdea(@Param('id') ideaId: string, @CurrentUser() user: User) {
     const response = (await this.ideaService.likeIdea(user.id, ideaId)) as {
@@ -149,7 +149,7 @@ export class IdeaController {
     summary: 'Show interest on an idea',
     description: 'Show/cancel interest on an idea',
   })
-  @Post(':id/interest')
+  @Post(':id/interests')
   @Roles(RoleType.user)
   async ShowInterest(
     @Param('id') ideaId: string,
@@ -186,7 +186,7 @@ export class IdeaController {
       },
     },
   })
-  @Post(':id/comment')
+  @Post(':id/comments')
   @Roles(RoleType.user)
   async comment(
     @Param('id') ideaId: string,

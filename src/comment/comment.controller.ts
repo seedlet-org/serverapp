@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -17,6 +25,25 @@ export class CommentController {
   constructor(private commentService: CommentService) {}
 
   @ApiOperation({
+    summary: 'Get a comment',
+    description: 'Get a comment by ID',
+  })
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const comment = await this.commentService.findOne(id);
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    return {
+      statusCode: 200,
+      message: 'Comment fetched successfully',
+      data: comment,
+    };
+  }
+
+  @ApiOperation({
     summary: 'Comment on a comment',
     description: 'Comment on a comment.',
   })
@@ -24,23 +51,23 @@ export class CommentController {
     schema: {
       type: 'object',
       properties: {
-        comment: {
+        reply: {
           type: 'string',
           example: 'This is a comment',
         },
       },
     },
   })
-  @Post(':id/comment')
+  @Post(':id/replies')
   async comment(
     @Param('id') commentId: string,
     @CurrentUser() user: userWithRole,
-    @Body() input: { comment: string },
+    @Body() input: { reply: string },
   ) {
-    const response = await this.commentService.comment(
+    const response = await this.commentService.reply(
       user.id,
       commentId,
-      input.comment,
+      input.reply,
     );
 
     return {
@@ -54,7 +81,7 @@ export class CommentController {
     summary: 'Like a comment',
     description: 'Like and unlike a comment',
   })
-  @Post(':id/like')
+  @Post(':id/likes')
   @Roles(RoleType.user)
   async LikeComment(@Param('id') commentId: string, @CurrentUser() user: User) {
     const response = (await this.commentService.likeComment(

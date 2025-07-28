@@ -9,7 +9,39 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CommentService {
-  async comment(userId: string, commentId: string, content: string) {
+  async findOne(id: string) {
+    try {
+      const comment = await prisma.comment.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          owner: true,
+          replies: {
+            include: {
+              owner: true,
+            },
+          },
+        },
+      });
+
+      return comment;
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Comment not found');
+      }
+      throw new BadGatewayException('An error was encountered');
+    }
+  }
+
+  async reply(userId: string, commentId: string, content: string) {
     try {
       const comment = await prisma.comment.findUnique({
         where: {
@@ -20,19 +52,32 @@ export class CommentService {
         throw new NotFoundException();
       }
 
-      const response = await prisma.comment.create({
-        data: {
-          ownerId: userId,
-          refId: commentId,
-          refType: 'Comment',
-          content,
-        },
-        include: {
-          owner: true,
-        },
-      });
+      const [reply] = await prisma.$transaction([
+        prisma.comment.create({
+          data: {
+            ownerId: userId,
+            parentId: commentId,
+            refType: 'Comment',
+            content,
+          },
+          include: {
+            owner: true,
+            parent: true,
+          },
+        }),
+        prisma.comment.update({
+          where: {
+            id: commentId,
+          },
+          data: {
+            commentCount: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
 
-      return response;
+      return reply;
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
