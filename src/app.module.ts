@@ -11,6 +11,7 @@ import { EmailModule } from './email/email.module';
 import { HttpModule } from '@nestjs/axios';
 import { SupabaseService } from './supabase/supabase.service';
 import { IdeaModule } from './idea/idea.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { IdeaModule } from './idea/idea.module';
     EmailModule,
     HttpModule,
     IdeaModule,
+    CommentModule,
   ],
   providers: [
     PrismaService,

@@ -70,6 +70,7 @@ model Idea {
   owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   interests       Interest[]
   lab             Lab?        @relation("IdeaLab")
+  Comment Comment[]
 
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
@@ -83,12 +84,18 @@ model Comment {
   ownerId         String        @db.Uuid    @map("owner_id")
   likeCount       Int           @default(0) @map("like_count")
   commentCount    Int           @default(0) @map("comment_count")
-  refId           String?         @map("ref_id") @db.Uuid
   refType         CommentRefType
+
+  parentId        String?       @db.Uuid @map("parent_id")
+  parent          Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         Comment[]     @relation("CommentReplies")
+
+  ideaId          String?       @db.Uuid @map("idea_id")
+  idea            Idea?         @relation(fields: [ideaId], references: [id])
 
   owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  @@unique([ownerId, refId, refType])
+  // @@unique([ownerId, refId, refType])
   @@map("comments")
 
 }

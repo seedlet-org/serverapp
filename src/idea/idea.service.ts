@@ -14,7 +14,7 @@ import {
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 @Injectable()
 export class IdeaService {
-  async getAll(): Promise<Idea[] | []> {
+  async findAll(): Promise<Idea[] | []> {
     try {
       const ideas = await prisma.idea.findMany({
         where: {
@@ -39,7 +39,7 @@ export class IdeaService {
     }
   }
 
-  async getById(id: string): Promise<Idea | null> {
+  async findOne(id: string) {
     try {
       const idea = await prisma.idea.findUnique({
         where: {
@@ -52,7 +52,17 @@ export class IdeaService {
         },
       });
 
-      return idea;
+      const comments = await prisma.comment.findMany({
+        where: {
+          ideaId: id,
+          refType: 'Idea',
+        },
+        include: {
+          owner: true,
+        },
+      });
+
+      return { idea, comments };
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&
@@ -363,29 +373,58 @@ export class IdeaService {
     }
   }
 
-  // async comment(userId: string, ideaId: string, comment: string) {
-  //   try {
-  //     const idea = await prisma.idea.findUnique({
-  //       where: {
-  //         id: ideaId,
-  //       },
-  //     });
-  //     if (!idea) {
-  //       throw new NotFoundException();
-  //     }
+  async comment(userId: string, ideaId: string, comment: string) {
+    try {
+      const ideaResponse = await prisma.idea.findUnique({
+        where: {
+          id: ideaId,
+        },
+      });
+      if (!ideaResponse) {
+        throw new NotFoundException();
+      }
 
-  //   } catch (error) {
-  //     if (
-  //       error instanceof PrismaClientKnownRequestError &&
-  //       error.code === 'P2023'
-  //     ) {
-  //       throw new BadRequestException('Invalid request parameter');
-  //     }
+      const [cmt, idea] = await prisma.$transaction([
+        prisma.comment.create({
+          data: {
+            ownerId: userId,
+            ideaId,
+            refType: 'Idea',
+            content: comment,
+          },
+          include: {
+            owner: true,
+          },
+        }),
+        prisma.idea.update({
+          where: {
+            id: ideaId,
+          },
+          data: {
+            commentCount: {
+              increment: 1,
+            },
+          },
+        }),
+      ]);
 
-  //     if (error instanceof NotFoundException) {
-  //       throw new NotFoundException('Idea not found');
-  //     }
-  //     throw new BadGatewayException('An error was encountered');
-  //   }
-  // }
+      return {
+        idea: { ...idea },
+        comment: { ...cmt },
+      };
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === 'P2023'
+      ) {
+        throw new BadRequestException('Invalid request parameter');
+      }
+
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Idea not found');
+      }
+      console.log(error);
+      throw new BadGatewayException('An error was encountered');
+    }
+  }
 }

@@ -102,7 +102,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const user = req.user as userWithRole;
-    console.log('uu', user);
     if (!user) {
       throw new BadRequestException('User not found');
     }
