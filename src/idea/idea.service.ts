@@ -24,6 +24,7 @@ export class IdeaService {
         },
         include: {
           tags: true,
+          owner: true,
         },
       });
 
