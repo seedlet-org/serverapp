@@ -12,6 +12,7 @@ import { HttpModule } from '@nestjs/axios';
 import { SupabaseService } from './supabase/supabase.service';
 import { IdeaModule } from './idea/idea.module';
 import { CommentModule } from './comment/comment.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CommentModule } from './comment/comment.module';
     HttpModule,
     IdeaModule,
     CommentModule,
+    TagModule,
   ],
   providers: [
     PrismaService,
