@@ -108,27 +108,6 @@ export class IdeaController {
   }
 
   @ApiOperation({
-    summary: 'Get all tags',
-    description: 'Fetch all tags',
-  })
-  @Get('tags')
-  async getAllTags() {
-    const tags = await this.ideaService.getAllTags();
-    if (tags.length === 0) {
-      return {
-        statusCode: 200,
-        message: 'No idea in record',
-        data: [],
-      };
-    }
-    return {
-      statusCode: 200,
-      message: 'Tags fetched successfully',
-      data: tags,
-    };
-  }
-
-  @ApiOperation({
     summary: 'Remove a tag',
     description: 'Remove a tag from an idea',
   })

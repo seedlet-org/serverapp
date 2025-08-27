@@ -149,30 +149,6 @@ export class IdeaService {
     }
   }
 
-  async getAllTags() {
-    try {
-      const tags = await prisma.tag.findMany();
-      return tags;
-    } catch (error: unknown) {
-      if (
-        error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2023'
-      ) {
-        throw new BadRequestException('Invalid request parameter');
-      }
-
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException('Tags not found');
-      }
-
-      if (error instanceof BadRequestException) {
-        throw new BadRequestException(error.message);
-      }
-
-      throw new BadGatewayException('An error was encountered');
-    }
-  }
-
   async removeTag(ideaId: string, userId: string, tagId: string) {
     try {
       const idea = await prisma.idea.findUnique({
