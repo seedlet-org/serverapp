@@ -151,7 +151,8 @@ export class IdeaService {
 
   async getAllTags() {
     try {
-      return prisma.tag.findMany();
+      const tags = await prisma.tag.findMany();
+      return tags;
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&

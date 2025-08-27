@@ -87,11 +87,11 @@ model Comment {
   refType         CommentRefType
 
   parentId        String?       @db.Uuid @map("parent_id")
-  parent          Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  parent          Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies         Comment[]     @relation("CommentReplies")
 
   ideaId          String?       @db.Uuid @map("idea_id")
-  idea            Idea?         @relation(fields: [ideaId], references: [id])
+  idea            Idea?         @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
   owner           User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 

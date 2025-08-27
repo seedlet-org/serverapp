@@ -24,6 +24,7 @@ export class CreateIdeaDto {
   @MinLength(8)
   @MaxLength(100)
   title: string;
+
   @ApiProperty({
     required: true,
     example: 'idea description with more details.',
@@ -34,6 +35,7 @@ export class CreateIdeaDto {
   @MinLength(20)
   @MaxLength(255)
   description: string;
+
   @ApiProperty({
     required: true,
     example: ['Tag1', 'Tag2'],
@@ -45,6 +47,7 @@ export class CreateIdeaDto {
   @ArrayMaxSize(4)
   @IsString({ each: true })
   tags: string[];
+
   @ApiPropertyOptional({
     example: ['Designer', 'Developer'],
   })
@@ -65,6 +68,7 @@ export class UpdateIdeaDto extends PartialType(CreateIdeaDto) {
   @MaxLength(100)
   @IsOptional()
   title: string;
+
   @ApiPropertyOptional({
     example: 'Updated idea description with more details.',
     minLength: 20,
@@ -75,6 +79,7 @@ export class UpdateIdeaDto extends PartialType(CreateIdeaDto) {
   @MaxLength(255)
   @IsOptional()
   description: string;
+
   @ApiPropertyOptional({
     example: ['Tag1', 'Tag2'],
     minItems: 2,
@@ -86,6 +91,7 @@ export class UpdateIdeaDto extends PartialType(CreateIdeaDto) {
   @IsString({ each: true })
   @IsOptional()
   tags: string[];
+
   @ApiPropertyOptional({
     example: ['Designer', 'Marketer'],
   })
