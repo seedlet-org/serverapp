@@ -302,6 +302,12 @@ export class IdeaService {
         throw new NotFoundException('Idea not found');
       }
 
+      if (userId === idea.ownerId) {
+        throw new BadRequestException(
+          'You cannot show interest on your own idea',
+        );
+      }
+
       const existingInterest = await prisma.interest.findUnique({
         where: {
           userId_ideaId: {
