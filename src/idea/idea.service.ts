@@ -376,6 +376,9 @@ export class IdeaService {
       if (error instanceof NotFoundException) {
         throw new NotFoundException('Idea not found');
       }
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
       throw new BadGatewayException('An error was encountered');
     }
   }
