@@ -52,7 +52,17 @@ export class CommentService {
         throw new NotFoundException();
       }
 
-      const [reply] = await prisma.$transaction([
+      const [_, reply] = await prisma.$transaction([
+        prisma.comment.update({
+          where: {
+            id: commentId,
+          },
+          data: {
+            commentCount: {
+              increment: 1,
+            },
+          },
+        }),
         prisma.comment.create({
           data: {
             ownerId: userId,
@@ -63,16 +73,6 @@ export class CommentService {
           include: {
             owner: true,
             parent: true,
-          },
-        }),
-        prisma.comment.update({
-          where: {
-            id: commentId,
-          },
-          data: {
-            commentCount: {
-              increment: 1,
-            },
           },
         }),
       ]);
