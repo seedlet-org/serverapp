@@ -27,7 +27,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: '*',
+    origin: ['http://localhost'],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });

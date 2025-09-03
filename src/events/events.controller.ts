@@ -1,8 +1,7 @@
 import { Controller, MessageEvent, Sse } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ApiOperation, ApiProduces } from '@nestjs/swagger';
-import { ISseData } from './interface/events.interface';
 
 // @ApiBearerAuth()
 // @UseGuards(AuthGuard('jwt'), RolesGuard)
