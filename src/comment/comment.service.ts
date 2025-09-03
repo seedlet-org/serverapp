@@ -6,9 +6,12 @@ import {
 } from '@nestjs/common';
 import prisma from 'src/prisma/prisma.middleware';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { EventsService } from 'src/events/events.service';
 
 @Injectable()
 export class CommentService {
+  constructor(private readonly events: EventsService) {}
+
   async findOne(id: string) {
     try {
       const comment = await prisma.comment.findUnique({
@@ -77,6 +80,12 @@ export class CommentService {
         }),
       ]);
 
+      this.events.emit('comment', {
+        ref: 'comment',
+        refId: commentId,
+        reply: reply,
+      });
+
       return reply;
     } catch (error) {
       if (
@@ -117,6 +126,8 @@ export class CommentService {
         },
       });
 
+      let liked = false;
+
       if (existingLike) {
         await prisma.$transaction([
           prisma.like.delete({
@@ -139,9 +150,7 @@ export class CommentService {
             },
           }),
         ]);
-        return {
-          liked: false,
-        };
+        liked = false;
       } else {
         await prisma.$transaction([
           prisma.like.create({
@@ -162,10 +171,14 @@ export class CommentService {
             },
           }),
         ]);
-        return {
-          liked: true,
-        };
+        liked = true;
       }
+
+      this.events.emit('like', { ref: 'comment', refId: commentId, liked });
+
+      return {
+        liked,
+      };
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&

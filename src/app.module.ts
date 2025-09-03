@@ -13,6 +13,7 @@ import { SupabaseService } from './supabase/supabase.service';
 import { IdeaModule } from './idea/idea.module';
 import { CommentModule } from './comment/comment.module';
 import { TagModule } from './tag/tag.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { TagModule } from './tag/tag.module';
     IdeaModule,
     CommentModule,
     TagModule,
+    EventsModule,
   ],
   providers: [
     PrismaService,

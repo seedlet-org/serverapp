@@ -12,8 +12,11 @@ import {
   UpdateIdeaDto,
 } from './dto/idea.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { EventsService } from 'src/events/events.service';
 @Injectable()
 export class IdeaService {
+  constructor(private readonly events: EventsService) {}
+
   async findAll(): Promise<Idea[] | []> {
     try {
       const ideas = await prisma.idea.findMany({
@@ -77,7 +80,7 @@ export class IdeaService {
 
   async create(input: CreateIdeaDto, ownerId: string) {
     try {
-      return prisma.idea.create({
+      const idea = await prisma.idea.create({
         data: {
           ...input,
           ownerId,
@@ -92,6 +95,16 @@ export class IdeaService {
           tags: true,
         },
       });
+
+      if (idea) {
+        this.events.emit('create', {
+          ref: 'idea',
+          refId: idea.id,
+          idea: idea,
+        });
+      }
+
+      return idea;
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&
@@ -223,6 +236,8 @@ export class IdeaService {
         },
       });
 
+      let liked = false;
+
       if (existingLike) {
         await prisma.$transaction([
           prisma.like.delete({
@@ -245,9 +260,7 @@ export class IdeaService {
             },
           }),
         ]);
-        return {
-          liked: false,
-        };
+        liked = false;
       } else {
         await prisma.$transaction([
           prisma.like.create({
@@ -268,10 +281,18 @@ export class IdeaService {
             },
           }),
         ]);
-        return {
-          liked: true,
-        };
+        liked = true;
       }
+
+      this.events.emit('like', {
+        ref: 'idea',
+        refId: ideaId,
+        liked,
+      });
+
+      return {
+        liked,
+      };
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&
@@ -317,6 +338,8 @@ export class IdeaService {
         },
       });
 
+      let interested = false;
+
       if (existingInterest) {
         await prisma.$transaction([
           prisma.interest.delete({
@@ -338,9 +361,7 @@ export class IdeaService {
             },
           }),
         ]);
-        return {
-          interested: false,
-        };
+        interested = false;
       } else {
         await prisma.$transaction([
           prisma.interest.create({
@@ -361,10 +382,18 @@ export class IdeaService {
             },
           }),
         ]);
-        return {
-          interested: true,
-        };
+        interested = true;
       }
+
+      this.events.emit('interest', {
+        ref: 'idea',
+        refId: ideaId,
+        interested,
+      });
+
+      return {
+        interested,
+      };
     } catch (error: unknown) {
       if (
         error instanceof PrismaClientKnownRequestError &&
@@ -418,9 +447,15 @@ export class IdeaService {
         }),
       ]);
 
+      this.events.emit('comment', {
+        ref: 'idea',
+        refId: ideaId,
+        reply: cmt,
+      });
+
       return {
-        idea: { ...idea },
-        comment: { ...cmt },
+        idea: idea,
+        comment: cmt,
       };
     } catch (error) {
       if (

@@ -22,14 +22,12 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/v1', app, documentFactory);
+  SwaggerModule.setup('v1/api-docs', app, documentFactory, {
+    jsonDocumentUrl: 'v1/api-docs.json',
+  });
 
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://seedlet-api.onrender.com',
-    ],
+    origin: '*',
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
