@@ -28,6 +28,7 @@ export class IdeaService {
         include: {
           tags: true,
           owner: true,
+          interests: true,
         },
       });
 
