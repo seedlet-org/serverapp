@@ -17,7 +17,7 @@ import { EventsService } from 'src/events/events.service';
 export class IdeaService {
   constructor(private readonly events: EventsService) {}
 
-  async findAll(): Promise<Idea[] | []> {
+  async findAll(currentUserId: string): Promise<Idea[] | []> {
     try {
       const ideas = await prisma.idea.findMany({
         where: {
@@ -32,6 +32,27 @@ export class IdeaService {
         },
       });
 
+      await Promise.all(
+        ideas.map(async (idea) => {
+          const likes = await prisma.like.count({
+            where: {
+              itemId: idea.id,
+              itemType: 'Idea',
+              userId: currentUserId,
+            },
+          });
+          (idea as Record<string, unknown>).likedByCurrentUser = likes > 0;
+
+          const currentUserHasInterest = idea?.interests.some(
+            (interest) => interest.userId === currentUserId,
+          );
+          (idea as Record<string, unknown>).currentUserHasInterest =
+            currentUserHasInterest;
+
+          return idea;
+        }),
+      );
+
       return ideas;
     } catch (error: unknown) {
       if (
@@ -44,11 +65,14 @@ export class IdeaService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, currentUserId: string) {
     try {
       const idea = await prisma.idea.findUnique({
         where: {
           id,
+          status: {
+            in: [IdeaStatus.Published, IdeaStatus.Lab],
+          },
         },
         include: {
           owner: true,
@@ -56,6 +80,23 @@ export class IdeaService {
           tags: true,
         },
       });
+
+      const likes = await prisma.like.count({
+        where: {
+          itemId: id,
+          itemType: 'Idea',
+          userId: currentUserId,
+        },
+      });
+
+      const currentUserHasInterest = idea?.interests.some(
+        (interest) => interest.userId === currentUserId,
+      );
+      const likedByCurrentUser = likes > 0;
+
+      (idea as Record<string, unknown>).currentUserHasInterest =
+        currentUserHasInterest;
+      (idea as Record<string, unknown>).likedByCurrentUser = likedByCurrentUser;
 
       const comments = await prisma.comment.findMany({
         where: {
@@ -66,6 +107,22 @@ export class IdeaService {
           owner: true,
         },
       });
+
+      await Promise.all(
+        comments.map(async (comment) => {
+          const likes = await prisma.like.count({
+            where: {
+              itemId: comment.id,
+              itemType: 'Comment',
+              userId: currentUserId,
+            },
+          });
+
+          (comment as Record<string, unknown>).likedByCurrentUser = likes > 0;
+
+          return comment;
+        }),
+      );
 
       return { idea, comments };
     } catch (error: unknown) {

@@ -29,8 +29,11 @@ export class CommentController {
     description: 'Get a comment by ID',
   })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const comment = await this.commentService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    const { comment, likedByCurrentUser } = await this.commentService.findOne(
+      id,
+      user.id,
+    );
 
     if (!comment) {
       throw new NotFoundException('Comment not found');
@@ -39,7 +42,10 @@ export class CommentController {
     return {
       statusCode: 200,
       message: 'Comment fetched successfully',
-      data: comment,
+      data: {
+        ...comment,
+        likedByCurrentUser,
+      },
     };
   }
 

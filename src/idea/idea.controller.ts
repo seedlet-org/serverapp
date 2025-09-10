@@ -35,8 +35,8 @@ export class IdeaController {
     description: 'Fetch all ideas that are published or in a lab.',
   })
   @Get()
-  async findAll() {
-    const ideas = await this.ideaService.findAll();
+  async findAll(@CurrentUser() user: User) {
+    const ideas = await this.ideaService.findAll(user.id);
     if (ideas.length === 0) {
       return {
         statusCode: 200,
@@ -57,8 +57,8 @@ export class IdeaController {
     description: 'Fetch an idea by its ID.',
   })
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const idea = await this.ideaService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: User) {
+    const idea = await this.ideaService.findOne(id, user.id);
 
     if (!idea) {
       throw new NotFoundException('Idea not found');

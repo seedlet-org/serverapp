@@ -12,7 +12,7 @@ import { EventsService } from 'src/events/events.service';
 export class CommentService {
   constructor(private readonly events: EventsService) {}
 
-  async findOne(id: string) {
+  async findOne(id: string, CurrentUserId: string) {
     try {
       const comment = await prisma.comment.findUnique({
         where: {
@@ -28,7 +28,17 @@ export class CommentService {
         },
       });
 
-      return comment;
+      const likes = await prisma.like.count({
+        where: {
+          itemId: id,
+          itemType: 'Comment',
+          userId: CurrentUserId,
+        },
+      });
+
+      const likedByCurrentUser = likes > 0;
+
+      return { comment, likedByCurrentUser };
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
