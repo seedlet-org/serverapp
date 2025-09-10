@@ -37,5 +37,9 @@ export class UpdateUserDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  socialLinks?: string;
+  githubUrl?: string;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  linkedinUrl?: string;
 }

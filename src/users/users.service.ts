@@ -126,10 +126,6 @@ export class UsersService {
         },
         data: {
           ...input,
-          socialLinks: JSON.parse(input.socialLinks as string) as Record<
-            string,
-            string
-          >,
           profileUpdated: true,
         },
       });
@@ -146,6 +142,7 @@ export class UsersService {
       ) {
         throw new BadRequestException('Invalid request parameter');
       }
+      console.log(error);
       throw new BadGatewayException('An error was encountered');
     }
   }
