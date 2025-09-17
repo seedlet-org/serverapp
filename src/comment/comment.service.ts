@@ -36,6 +36,23 @@ export class CommentService {
         },
       });
 
+      if (comment) {
+        await Promise.all(
+          comment.replies.map(async (reply) => {
+            const likes = await prisma.like.count({
+              where: {
+                itemId: reply.id,
+                itemType: 'Comment',
+                userId: CurrentUserId,
+              },
+            });
+            (reply as Record<string, unknown>).likedByCurrentUser = likes > 0;
+
+            return reply;
+          }),
+        );
+      }
+
       const likedByCurrentUser = likes > 0;
 
       return { comment, likedByCurrentUser };
