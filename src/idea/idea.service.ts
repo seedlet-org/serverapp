@@ -25,6 +25,9 @@ export class IdeaService {
             in: [IdeaStatus.Published, IdeaStatus.Lab],
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
         include: {
           tags: true,
           owner: true,

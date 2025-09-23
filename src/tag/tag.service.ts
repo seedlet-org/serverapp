@@ -11,7 +11,11 @@ import prisma from 'src/prisma/prisma.middleware';
 export class TagService {
   async getAllTags() {
     try {
-      const tags = await prisma.tag.findMany();
+      const tags = await prisma.tag.findMany({
+        orderBy: {
+          name: 'asc',
+        },
+      });
       return tags;
     } catch (error: unknown) {
       if (
