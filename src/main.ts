@@ -27,7 +27,11 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://seedlet-api.onrender.com'],
+    origin: [
+      'http://localhost:3000',
+      'https://seedlet-api.onrender.com',
+      'https://seedlet.onrender.com',
+    ],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
