@@ -5,4 +5,5 @@ export interface ISseData {
   interested?: boolean;
   reply?: object;
   idea?: object;
+  actorId: string;
 }

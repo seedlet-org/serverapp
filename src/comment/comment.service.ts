@@ -111,6 +111,7 @@ export class CommentService {
         ref: 'comment',
         refId: commentId,
         reply: reply,
+        actorId: userId,
       });
 
       return reply;
@@ -201,7 +202,12 @@ export class CommentService {
         liked = true;
       }
 
-      this.events.emit('like', { ref: 'comment', refId: commentId, liked });
+      this.events.emit('like', {
+        ref: 'comment',
+        refId: commentId,
+        liked,
+        actorId: userId,
+      });
 
       return {
         liked,

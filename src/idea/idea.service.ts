@@ -162,6 +162,7 @@ export class IdeaService {
           ref: 'idea',
           refId: idea.id,
           idea: idea,
+          actorId: ownerId,
         });
       }
 
@@ -349,6 +350,7 @@ export class IdeaService {
         ref: 'idea',
         refId: ideaId,
         liked,
+        actorId: userId,
       });
 
       return {
@@ -450,6 +452,7 @@ export class IdeaService {
         ref: 'idea',
         refId: ideaId,
         interested,
+        actorId: userId,
       });
 
       return {
@@ -512,6 +515,7 @@ export class IdeaService {
         ref: 'idea',
         refId: ideaId,
         reply: cmt,
+        actorId: userId,
       });
 
       return {

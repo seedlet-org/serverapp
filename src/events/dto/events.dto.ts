@@ -9,6 +9,9 @@ export class LikeEventDto {
 
   @ApiProperty({ example: true })
   liked: boolean;
+
+  @ApiProperty({ example: '12345-35345-67878' })
+  actorId: string;
 }
 
 export class CommentEventDto {
@@ -30,6 +33,9 @@ export class CommentEventDto {
     },
   })
   reply: object;
+
+  @ApiProperty({ example: '12345-35345-67878' })
+  actorId: string;
 }
 
 export class interestEventDto {
@@ -41,6 +47,9 @@ export class interestEventDto {
 
   @ApiProperty({ example: true })
   interested: boolean;
+
+  @ApiProperty({ example: '12345-35345-67878' })
+  actorId: string;
 }
 
 export class CreateIdeaEventDto {
@@ -59,4 +68,7 @@ export class CreateIdeaEventDto {
     },
   })
   idea: object;
+
+  @ApiProperty({ example: '12345-35345-67878' })
+  actorId: string;
 }
