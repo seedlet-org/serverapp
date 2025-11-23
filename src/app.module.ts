@@ -14,6 +14,7 @@ import { IdeaModule } from './idea/idea.module';
 import { CommentModule } from './comment/comment.module';
 import { TagModule } from './tag/tag.module';
 import { EventsModule } from './events/events.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -48,5 +49,6 @@ import { EventsModule } from './events/events.module';
     EmailService,
     SupabaseService,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
