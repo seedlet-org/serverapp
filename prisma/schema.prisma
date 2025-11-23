@@ -58,8 +58,8 @@ model User {
 
 model Idea {
   id              String      @id @default(uuid()) @db.Uuid
-  title           String      @db.VarChar(50)
-  description     String      
+  title           String      @db.VarChar(100)
+  description     String      @db.VarChar(300)
   likeCount       Int         @default(0) @map("like_count")
   commentCount    Int         @default(0) @map("comment_count")
   interestCount   Int         @default(0) @map("interest_count")
